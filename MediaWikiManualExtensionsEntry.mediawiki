@@ -1,0 +1,91 @@
+{{Extension|templatemode=
+|name          = Amazon Widget
+|status        = beta
+|type1         = tag
+|type2         =
+|hook1         = ParserFirstCallInit
+|hook2         =
+|username      = gleneivey
+|author        = 
+|description   = Insert Amazon Associates advertising widget in wiki page
+|image         =
+|imagesize     =
+|version       = 0.1
+|update        =
+|mediawiki     = 1.15.1
+|php           =
+|license       = AGPLv3
+|download      = http://github.com/gleneivey/AmazonWidget
+|readme        = http://github.com/gleneivey/AmazonWidget/blob/master/README
+|changelog     =
+|parameters    = $wg_AMZWID_associateId $wg_AMZWID_urlTemplate $wg_AMZWID_noScriptTemplate &wg_AMZWID_margin
+|tags          = <amazonwidget>
+|rights        = 
+|example       = http://wiki.wontology.org/WmHelp:Technologies
+|compatibility = 
+}}
+
+==What can this extension do?==
+
+Amazon Widget is a MediaWiki tag extension that allows the insertion of an Amazon Associates advertising "widget" into a wiki page.  Your Amazon Associate ID is specified through a global variable you must initialize in your "LocalSettings.php", and the long hexadecimal string that uniquely identifies each Amazon ad unit is supplied to the tag through an attribute.  Amazon Widget supplies the rest of the boiler-plate for the Amazon ad, and wraps it in a <div> tag in the generated HTML, which is (by default) floated to the right edge of the wiki page.
+
+This extension is not suitable for creating Amazon "Omakase" widgets (see http://github.com/gleneivey/AmazonOmakaseWidget for that), and has so far been tested only with "My Favorites"-type widgets.
+
+Amazon Widget is licensed under the GNU AGPLv3.
+
+==Usage==
+
+An ad block is included in a wiki page by placing the "<amazonwidget>" tag in your wikitext.  For example:
+
+  <amazonwidget adcode="01234567-89ab-cdef-0123-456789abcdef" />
+
+The "adcode" attribute allows you to supply the ID number for the specific ad to be requested from Amazon.  You can find this in the URLs that Amazon includes when you view the HTML code that would be inserted in a normal web page to cause the ad to display.  The "adcode" value is checked to make sure it is valid (composed only of hexadecimal digits and hyphens), and if it is not, Amazon Widget produces an HTML comment with an error message (search for "AmazonWidget" in the returned page source).
+
+Amazon Widget places the HTML for the ad itself inside of a &lt;div&gt; tag.  It places the following attributes in this tag:
+
+;class="AmazonWidget"
+:This attribute sets the class of all div's produced by Amazon Widget the same so that you can apply CSS styling to all of them as a set.
+;id="01234567-89ab-cdef-0123-456789abcdef"
+:In addition to being included in the HTML for the ad itself, Amazon Widget places the value from the "adcode" attribute in the wikitext of the page in the ad div's "id".  This could be used to apply CSS styling to an individual ad.
+;style="float&#58; right"
+:By default, Amazon Widget creates div's that are "floated" right, so that they're shown flush against the right edge of the content area of the page, and the rest of the page's content flows around them. To control how this attribute is created in the output HTML, include a 'float="<value>"' attribute in the <amazonwidget> tag in your wiki page's source, like:
+  <amazonwidget adcode="01234567-89ab-cdef-0123-456789abcdef" float="left" />
+This example will generate output HTML with 'style="float: left"', causing the ad to be positioned between the "portal" column (normally at the far left edge of a wiki page) and the rest of the page's text/etc. The acceptable values for the "float" attribute are "left", "right", and "none".  An unacceptable value will produce the default of "right".
+
+==Download instructions==
+
+The public repository for AmazonWidget is on GitHub at http://github.com/gleneivey/AmazonWidget
+
+==Installation==
+
+To install this extension, add the following to [[Manual:LocalSettings.php|LocalSettings.php]]:<source lang="php">
+$wg_AMZWID_associateId = "<your associate tracking-id>";
+require_once( "$IP/extensions/AmazonWidget/AmazonWidget.php" );
+</source>
+
+The global variable for your associate ID (shown above) is required. There are additional optional configuration globals supported, see below.  The associate ID must be supplied on LocalSettings.php for security reasons, preventing anyone with "just" page-editing privileges from modifying the beneficiary of advertising on the wiki.
+
+===Configuration parameters===
+
+In addition to the mandatory $wg_AMZWID_associateId, Amazon Widget supports two additional variables that can be set in LocalSettings.php.  These are intended to accomodate variations in the format of the amazon.com URL.  If the URLs that Amazon provides for your ads match the default URL patterns in Amazon Widget, you will have no need for most of these parameters.
+
+;$wg_AMZWID_urlTemplate
+:Use this variable to control the composition of the URL that will be placed in the generated HTML to fetch the ad JavaScript from Amazon. The default value is:<source lang="html4strict">
+http://ws.amazon.com/widgets/q?ServiceVersion=20070822&MarketPlace=US&ID=V20070822/US/$1/8001/$2
+</source>Where "$1" is replaced by your Amazon Associates ID (the value of the required "$wg_AMZWID_associateId" variable), and "$2" is replaced by the ad code ("adcode" attribute) from each <amazonwidget> tag.  No other parsing or validation is performed on the value you provide&mdash;you should supply a value which will, with the substitution of "$1" and "$2", produce a URL string matching the sample Amazon provides for your ads.
+;$wg_AMZWID_noScriptTemplate
+:The HTML code Amazon provides for ad widgets includes the ad URL twice:  once as the "src" of a <script> tag, and once as the "href" of an <a>.  The URL template described above completely controls the URL used for the script-tag src.  The value of this variable, which defaults to:<source lang="html4strict">
+&Operation=NoScript
+</source>(which matches Amazon's current value) is ''appended'' to the URL used for src in order to produce the one used as the "href" of the <noscript> tag.
+;&wg_AMZWID_margin
+:If this global variable is defined and the div containing an Amazon Widget is floated, then Amazon Widget will add a margin specification to the div's "style=" attribute.  For example, with<source lang="php">
+$wg_AMZWID_margin = "2em";
+</source>in "LocalSettings.php", the Amazon Widget tag<source lang="xml">
+<amazonwidget adcode="..." float="left" />
+</source>will produce a div tag in the generated HTML that looks like<source lang="html4strict">
+<div id="..." class="AmazonWidget" style="float: left; margin-right: 2em">
+</source>Note that the margin is always added to the ''opposite'' side from the float, so that the specified blank area is left between the text of the page and the edge of the ad.  The value of $wg_AMZWID_margin is copied directly into the output HTML and not error checked in any way.
+
+==See also==
+
+[[Extension:AmazonOmakaseWidget]]
