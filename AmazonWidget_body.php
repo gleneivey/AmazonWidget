@@ -84,7 +84,8 @@ class AmazonWidget {
     $htmlOut .= '"></script> <noscript><a href="';
     $htmlOut .= $url . $noScript;
     $htmlOut .= '">Amazon.com Widgets</a></noscript>';
-    $htmlOut .= "</div>";
+    $htmlOut .= '</div>';
+    $htmlOut .= '<script type="text/javascript">wikiPageHasAds = true;</script>';
 
     return $htmlOut;
   }
